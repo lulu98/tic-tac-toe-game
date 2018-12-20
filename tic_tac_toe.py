@@ -1,7 +1,8 @@
 from mygraphics import *
 import math,sys
+import speech_rec as sr
+
 '''TODO: 
-- language processing
 - build ai
 '''
 
@@ -19,6 +20,7 @@ class Field:
 
 class Tic_Tac_Toe_Game:
 	def __init__(self):
+		version = self.decide_version()
 		self.initialize_game_field()
 		self.player = 0
 		self.result = -1
@@ -26,24 +28,69 @@ class Tic_Tac_Toe_Game:
 		self.win = GraphWin("My Chess Game",backgroundImage.getHeight(),backgroundImage.getWidth())
 		self.win.setBackground('black')
 		backgroundImage.draw(self.win)
-		self.print_field()
-		while not(self.is_game_over()):
-			location = self.win.getMouse()
-			for row in range(0,len(self.field)):
-				for col in range(0,len(self.field)):
-					if(self.field[row][col].path == "" and location.getX() >= self.field[row][col].lowerX and location.getX() <= self.field[row][col].upperX 
-						and location.getY() >= self.field[row][col].lowerY and location.getY() <= self.field[row][col].upperY):
-						self.field[row][col].img.undraw()
-						if(self.player == 0):
-							self.field[row][col] = Field(self.field[row][col].img.anchor.x,self.field[row][col].img.anchor.y,"cross.gif")
-						elif(self.player == 1):
-							self.field[row][col] = Field(self.field[row][col].img.anchor.x,self.field[row][col].img.anchor.y,"circle.gif")
-						self.field[row][col].img.draw(self.win)
-			self.change_player()
-			time.sleep(0.1)
+
+		if(version == "click"):
+			self.version_click_control()
+		elif(version == "voice"):
+			self.version_voice_control()
+
 		self.evaluate_result()
 		time.sleep(2)
 		self.win.close()
+
+	def version_click_control(self):
+		self.print_field()
+		while not(self.is_game_over()):
+			location = self.win.getMouse()
+			for row in range(0, len(self.field)):
+				for col in range(0, len(self.field)):
+					if(self.field[row][col].path == "" and location.getX() >= self.field[row][col].lowerX and location.getX() <= self.field[row][col].upperX and location.getY() >= self.field[row][col].lowerY and location.getY() <= self.field[row][col].upperY):
+						self.field[row][col].img.undraw()
+						if (self.player == 0):
+							self.field[row][col] = Field(self.field[row][col].img.anchor.x,
+														 self.field[row][col].img.anchor.y, "cross.gif")
+						elif (self.player == 1):
+							self.field[row][col] = Field(self.field[row][col].img.anchor.x,
+														 self.field[row][col].img.anchor.y, "circle.gif")
+						self.field[row][col].img.draw(self.win)
+						self.change_player()
+			time.sleep(0.1)
+
+	def version_voice_control(self):
+		self.print_field()
+		while not(self.is_game_over()):
+			row,col = sr.get_position()
+			if(row != None and col != None and self.field[row][col].path == ""):
+				self.field[row][col].img.undraw()
+				if(self.player == 0):
+					self.field[row][col] = Field(self.field[row][col].img.anchor.x,self.field[row][col].img.anchor.y,"cross.gif")
+				elif(self.player == 1):
+					self.field[row][col] = Field(self.field[row][col].img.anchor.x,self.field[row][col].img.anchor.y,"circle.gif")
+				self.field[row][col].img.draw(self.win)
+				self.change_player()
+			time.sleep(0.1)
+
+	def decide_version(self):
+		win = GraphWin("My Chess Game", 500, 500)
+		win.setBackground('gray')
+		btn_voice_play = Text(Point(250,100),"Play with voice!")
+		btn_click_play = Text(Point(250,200),"Play by clicking!")
+		btn_voice_play.draw(win)
+		btn_click_play.draw(win)
+		stop_flag = False
+		version = "click"
+		while not(stop_flag):
+			location = win.getMouse()
+			if(location.getX() >= btn_voice_play.getAnchor().x - 50 and location.getX() <= btn_voice_play.getAnchor().x + 50 and location.getY() >= btn_voice_play.getAnchor().y - 50 and location.getY() <= btn_voice_play.getAnchor().y + 50):
+				version = "voice"
+				stop_flag = True
+			elif(location.getX() >= btn_click_play.getAnchor().x - 50 and location.getX() <= btn_click_play.getAnchor().x + 50 and location.getY() >= btn_click_play.getAnchor().y - 50 and location.getY() <= btn_click_play.getAnchor().y + 50):
+				version = "click"
+				stop_flag = True
+			time.sleep(0.1)
+		win.close()
+		return version
+
 	def evaluate_result(self):
 		if(self.result == -1):
 			print("Draw.")
@@ -53,6 +100,17 @@ class Tic_Tac_Toe_Game:
 			print("Player 2 has won.")
 		else:
 			sys.exit()
+
+	def get_row_col(self,voice_input):
+		field_num = 1
+		for i in range(1, 10):
+			if (str(i) in voice_input):
+				field_num = i
+				break
+		for row in range(0, 3):
+			for col in range(0, 3):
+				if (3 * row + col + 1 == field_num):
+					return row, col
 
 	def is_game_over(self):
 		game_over = False
