@@ -1,5 +1,5 @@
 # Tic-Tac-Toe Game
-Demonstration video: https://music-transcription-software.000webhostapp.com/projects/tic_tac_toe_game.html
+Demonstration video: http://www.lukas-graber.tk/projects/tic_tac_toe_game.html
 ## Introduction
 A simple application to play Tic-Tac-Toe on. You can either use your voice or just click the desired field.  
 
